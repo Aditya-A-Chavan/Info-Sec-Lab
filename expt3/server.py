@@ -1,4 +1,9 @@
 import socket   
+from client import A51
+
+
+key = 'aditya'
+
 
 def start_server(HOST, PORT):
     server_s = client_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -14,12 +19,17 @@ def start_server(HOST, PORT):
 
         message = client_s.recv(1024).decode('utf-8')
 
+        
+
         if not message:
             break
 
+
         print(f"message recieved from client: {message}")
+        
+    
 
 
 
 if __name__ == "__main__":
-    start_server('0.0.0.0', 9186)
+    start_server('10.0.79.143', 9186)
