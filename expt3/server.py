@@ -23,9 +23,9 @@ def start_server(HOST, PORT):
                         client_s.close()
                         continue
 
-                    message = json.loads(data)
-                    encrypted_text = message["encrypted_text"]
-                    key = message["key"]
+                    encrypted_message = json.loads(data)
+                    encrypted_text = encrypted_message["encrypted_text"]
+                    key = encrypted_message["key"]
 
                     decrypted_text = A51(key).decrypt(encrypted_text)
                     print(f"Message received from client: {encrypted_text}")

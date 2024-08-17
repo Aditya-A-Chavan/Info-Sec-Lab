@@ -1,5 +1,5 @@
 import socket
-
+import json
 
 
 
@@ -56,19 +56,21 @@ class A51:
         return ''.join(chars)
 
 
-def start_comm(HOST, message, PORT):
+def start_comm(HOST, message, key, PORT):
     client_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
         client_s.connect((HOST, PORT))
-        print(f"connected to server running machine: {HOST}:{PORT}")
+        print(f"connected to server running on machine: {HOST}:{PORT}")
 
-        client_s.send(message.encode('utf-8'))
-        print(f"Data that has been sent to server: {message}")
+        encrypted_message = json.dumps({
+            "encrypted_text": A51(key).encrypt(message),
+            "key": key
+        })
 
-        response = client_s.recv(1024).decode('utf-8')
+        client_s.send(encrypted_message.encode('utf-8'))
+        print(f"Data that has been sent to server: {encrypted_message}")
 
-        print(f"response from server: {response}")
     
     except Exception as e:
         print(e)
@@ -76,5 +78,6 @@ def start_comm(HOST, message, PORT):
 if __name__ == "__main__":
     server_ip = input("enter server ip: ")
     message = input("enter message to send: ")
+    key = input("enter key: ")
 
     start_comm(server_ip, message, PORT=9186)
