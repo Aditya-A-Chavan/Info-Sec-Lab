@@ -80,4 +80,4 @@ if __name__ == "__main__":
     message = input("enter message to send: ")
     key = input("enter key: ")
 
-    start_comm(server_ip, message, PORT=9186)
+    start_comm(server_ip, message, key, PORT=9186)
