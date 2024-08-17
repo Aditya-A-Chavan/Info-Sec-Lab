@@ -56,25 +56,24 @@ class A51:
         return ''.join(chars)
 
 
-def start_comm(HOST, message, key, PORT):
+def start_comm(server_ip, message, key, PORT=9186):
     client_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_s.connect((server_ip, PORT))
 
-    try:
-        client_s.connect((HOST, PORT))
-        print(f"connected to server running on machine: {HOST}:{PORT}")
- 
-        encrypted_text = A51(key).encrypt(message)
-        encrypted_message = json.dumps({
-            "encrypted_text": base64.b64encode(encrypted_text.encode('utf-8')).decode('utf-8'),
-            "key": key
-        })
+    cipher = A51(key)
+    encrypted_text = cipher.encrypt(message)
 
-        client_s.send(encrypted_message.encode('utf-8'))
-        print(f"Data that has been sent to server: {encrypted_message}")
+    base64_encrypted_text = base64.b64encode(encrypted_text.encode('latin1')).decode('utf-8')
+    
+    data_to_send = json.dumps({
+        "encrypted_text": base64_encrypted_text,
+        "key": key
+    })
 
-    except Exception as e:
-        print(e)
+    client_s.send(data_to_send.encode('utf-8'))
+    print(f"Data that has been sent to server: {data_to_send}")
 
+    client_s.close()
 
 if __name__ == "__main__":
     server_ip = input("enter server ip: ")
