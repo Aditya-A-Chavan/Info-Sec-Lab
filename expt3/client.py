@@ -5,9 +5,9 @@ import socket
 
 class A51:
     def __init__(self, key):
-        self.lfsr1 = self.initialize_lfsr(key, [19, 18, 17, 14], 19)
-        self.lfsr2 = self.initialize_lfsr(key, [22, 21], 22)
-        self.lfsr3 = self.initialize_lfsr(key, [23, 22, 21, 8], 23)
+        self.lfsr1 = self.initialize_lfsr(key, [18, 17, 16, 13], 19)  # Changed taps
+        self.lfsr2 = self.initialize_lfsr(key, [21, 20], 22)  # Kept the same
+        self.lfsr3 = self.initialize_lfsr(key, [22, 21, 20, 7], 23)  # Changed taps
 
     def initialize_lfsr(self, key, taps, length):
         lfsr = [0] * length
@@ -18,7 +18,7 @@ class A51:
     def shift_lfsr(self, lfsr):
         feedback = 0
         for tap in lfsr['taps']:
-            feedback ^= lfsr['state'][tap - 1]
+            feedback ^= lfsr['state'][tap]  # Changed to use tap directly
         lfsr['state'] = [feedback] + lfsr['state'][:-1]
         return lfsr['state'][-1]
 
