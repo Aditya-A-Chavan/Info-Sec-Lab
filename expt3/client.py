@@ -1,14 +1,14 @@
 import socket
 import json
+import base64
 
 
 
 class A51:
     def __init__(self, key):
-        self.lfsr1 = self.initialize_lfsr(key, [18, 17, 16, 13], 19)  # Changed taps
-        self.lfsr2 = self.initialize_lfsr(key, [21, 20], 22)  # Kept the same
-        self.lfsr3 = self.initialize_lfsr(key, [22, 21, 20, 7], 23)  # Changed taps
-
+        self.lfsr1 = self.initialize_lfsr(key, [18, 17, 16, 13], 19)
+        self.lfsr2 = self.initialize_lfsr(key, [21, 20], 22)
+        self.lfsr3 = self.initialize_lfsr(key, [22, 21, 20, 7], 23)
     def initialize_lfsr(self, key, taps, length):
         lfsr = [0] * length
         for i in range(length):
@@ -18,7 +18,7 @@ class A51:
     def shift_lfsr(self, lfsr):
         feedback = 0
         for tap in lfsr['taps']:
-            feedback ^= lfsr['state'][tap]  # Changed to use tap directly
+            feedback ^= lfsr['state'][tap]  
         lfsr['state'] = [feedback] + lfsr['state'][:-1]
         return lfsr['state'][-1]
 
@@ -62,18 +62,19 @@ def start_comm(HOST, message, key, PORT):
     try:
         client_s.connect((HOST, PORT))
         print(f"connected to server running on machine: {HOST}:{PORT}")
-
+ 
+        encrypted_text = A51(key).encrypt(message)
         encrypted_message = json.dumps({
-            "encrypted_text": A51(key).encrypt(message),
+            "encrypted_text": base64.b64encode(encrypted_text.encode('utf-8')).decode('utf-8'),
             "key": key
         })
 
         client_s.send(encrypted_message.encode('utf-8'))
         print(f"Data that has been sent to server: {encrypted_message}")
 
-    
     except Exception as e:
         print(e)
+
 
 if __name__ == "__main__":
     server_ip = input("enter server ip: ")
