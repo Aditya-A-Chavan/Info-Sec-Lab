@@ -31,7 +31,7 @@ def start_server(HOST, PORT):
 
                     decoded_encrypted_text = base64.b64decode(encrypted_text)
                     decrypted_text = A51(key).decrypt(decoded_encrypted_text.decode('latin1'))
-                    print(f"Base64 Encrypted Text: {encrypted_text}")
+                    print(f"Encrypted message: {encrypted_text}")
                     print(f"Decrypted Message: {decrypted_text}")
 
                 except json.JSONDecodeError:
