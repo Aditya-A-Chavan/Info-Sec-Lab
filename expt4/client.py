@@ -3,17 +3,14 @@ import json
 import math
 import random
 
-
 class RSA:
     @staticmethod
     def is_prime(n):
         if n < 2:
             return False
-        i = 2
-        while i <= int(math.sqrt(n)):
+        for i in range(2, int(math.sqrt(n)) + 1):
             if n % i == 0:
                 return False
-            i += 1
         return True
     
     @staticmethod
@@ -25,11 +22,9 @@ class RSA:
 
     @staticmethod
     def mod_inverse(e, phi):
-        d = 3
-        while d < phi:
+        for d in range(3, phi):
             if (d * e) % phi == 1:
                 return d
-            d += 1
         return None
 
     @staticmethod
@@ -49,37 +44,20 @@ class RSA:
         return ((e, n), (d, n))
 
     @staticmethod
-    def string_to_int(message):
-        result = ""
-        i = 0
-        while i < len(message):
-            char = message[i]
-            result += str(ord(char))
-            i += 1
-        return int(result)
-
-    @staticmethod
-    def int_to_string(number):
-        string = str(number)
-        result = ""
-        i = 0
-        while i < len(string):
-            char_code = int(string[i:i+2])
-            result += chr(char_code)
-            i += 2
-        return result
-
-    @staticmethod
     def encrypt(public_key, plaintext):
         e, n = public_key
-        m = RSA.string_to_int(plaintext)
-        if m >= n:
-            raise ValueError("Message is too large for the current key size")
-        c = pow(m, e, n)
-        return c
+        cipher = []
+
+          
+        for char in plaintext:
+            encrypted_char = pow(ord(char), e, n)
+            cipher.append(encrypted_char)
 
 
-def start_comm(server_ip, message, public_key, n, PORT=9186):
+        # cipher = [pow(ord(char), e, n) for char in plaintext]
+        return cipher
+
+def start_comm(server_ip, message, public_key, PORT=9186):
     client_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_s.connect((server_ip, PORT))
 
@@ -87,16 +65,16 @@ def start_comm(server_ip, message, public_key, n, PORT=9186):
     data = {
         'encrypted_text': encrypted_msg,
         'public_key': public_key[0],
-        'n': n
+        'n': public_key[1]
     }
+    print("encrypted message:", encrypted_msg)
 
     client_s.send(json.dumps(data).encode('utf-8'))
     client_s.close()
-
 
 if __name__ == "__main__":
     public_key, private_key = RSA.generate_keypair()
     message = input("Enter message: ")
     print(f"Original message: {message}")
 
-    start_comm('127.0.0.1', message, public_key, public_key[1])
+    start_comm('127.0.0.1', message, public_key)
