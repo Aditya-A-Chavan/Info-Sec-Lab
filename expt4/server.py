@@ -2,6 +2,7 @@ import socket
 import json
 import math
 import random
+import hashlib
 
 class RSA:
     @staticmethod
@@ -44,6 +45,14 @@ class RSA:
             phi *= (1 - 1/n)
         return int(phi)
 
+    @staticmethod
+    def verify_signature(message, signature, public_key):
+        e, n = public_key
+        decrypted_signature = pow(signature, e, n)
+        hash_object = hashlib.sha256(message.encode())
+        message_hash = int(hash_object.hexdigest(), 16) % n
+        return decrypted_signature == message_hash
+
 def start_server(HOST, PORT):
     server_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_s.bind((HOST, PORT))
@@ -65,18 +74,24 @@ def start_server(HOST, PORT):
                         client_s.close()
                         continue
 
-                    encrypted_message = json.loads(data)
-                    encrypted_text = encrypted_message['encrypted_text']
-                    e = encrypted_message['public_key']
-                    n = encrypted_message['n']
+                    message_data = json.loads(data)
+                    encrypted_text = message_data['encrypted_text']
+                    e = message_data['public_key']
+                    n = message_data['n']
+                    signature = message_data['signature']
 
-                    # Calculate private key
                     phi = RSA.calculate_phi(n)
                     d = RSA.mod_inverse(e, phi)
                     private_key = (d, n)
 
                     decrypted_msg = RSA.decrypt(private_key, encrypted_text)
                     print(f"Decrypted message: {decrypted_msg}")
+
+                    public_key = (e, n)
+                    if RSA.verify_signature(decrypted_msg, signature, public_key):
+                        print("Signature verified successfully.")
+                    else:
+                        print("Signature verification failed.")
 
                 except json.JSONDecodeError:
                     print("Received invalid JSON data.")
@@ -91,8 +106,6 @@ def start_server(HOST, PORT):
     except KeyboardInterrupt:
         print("\nServer Has Been Stopped by User. Closing session now.")
         server_s.close()
-
-
 
 if __name__ == "__main__":
     start_server('0.0.0.0', 9186)

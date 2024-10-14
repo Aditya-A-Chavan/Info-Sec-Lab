@@ -2,6 +2,7 @@ import socket
 import json
 import math
 import random
+import hashlib
 
 class RSA:
     @staticmethod
@@ -46,28 +47,32 @@ class RSA:
     @staticmethod
     def encrypt(public_key, plaintext):
         e, n = public_key
-        cipher = []
-
-          
-        for char in plaintext:
-            encrypted_char = pow(ord(char), e, n)
-            cipher.append(encrypted_char)
-
-
-        # cipher = [pow(ord(char), e, n) for char in plaintext]
+        cipher = [pow(ord(char), e, n) for char in plaintext]
         return cipher
 
-def start_comm(server_ip, message, public_key, PORT=9186):
+    @staticmethod
+    def sign(private_key, message):
+        d, n = private_key
+        hash_object = hashlib.sha256(message.encode())
+        message_hash = int(hash_object.hexdigest(), 16) % n  
+        signature = pow(message_hash, d, n)
+        return signature
+
+def start_comm(server_ip, message, public_key, private_key, PORT=9191):
     client_s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_s.connect((server_ip, PORT))
 
     encrypted_msg = RSA.encrypt(public_key, message)
+    signature = RSA.sign(private_key, message)
+    
     data = {
         'encrypted_text': encrypted_msg,
         'public_key': public_key[0],
-        'n': public_key[1]
+        'n': public_key[1],
+        'signature': signature
     }
-    print("encrypted message:", encrypted_msg)
+    print("Encrypted message:", encrypted_msg)
+    print("Signature:", signature)
 
     client_s.send(json.dumps(data).encode('utf-8'))
     client_s.close()
@@ -77,4 +82,4 @@ if __name__ == "__main__":
     message = input("Enter message: ")
     print(f"Original message: {message}")
 
-    start_comm('127.0.0.1', message, public_key)
+    start_comm('127.0.0.1', message, public_key, private_key)
